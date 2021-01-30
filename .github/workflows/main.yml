@@ -1,0 +1,48 @@
+name: sync github&gitee1
+on:
+  schedule:
+    - cron: '*/20 * * * *'
+  workflow_dispatch:
+  watch:
+    types: started
+  push:
+    branches: [ main ]
+  repository_dispatch:
+    types: sync-github&gitee
+jobs:
+  sync-github-gitee:
+    env:
+      PAT: ${{ secrets.PAT }} #此处PAT需要申请，教程详见：https://www.jianshu.com/p/bb82b3ad1d11
+      dst_key: ${{ secrets.GITEE_PRIVATE_KEY }}  ##GITEE的id_rsa
+      ssh_private_key: ${{ secrets.SSH_PRIVATE_KEY }}	  #GITHUB的id_rsa
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          persist-credentials: false
+
+# 备份到gitee  备份到gitee  备份到gitee
+
+      - name: push gitee -> github
+        uses: Yikun/hub-mirror-action@master
+        if: env.dst_key
+        with:
+          src: gitee/lxk0301  #SOURCE_REPO填写格式 github/repo
+          dst: Hvftk/gitee   #GITEE_NAME 填写格式 gitee/repo
+          static_list: jd_scripts        #SOURCE_REPO填写 仓库名字
+          dst_key: ${{ secrets.GITHUB_PRIVATE_KEY }}    #GITEE的id_rsa
+          dst_token: ${{ secrets.GITHUB_TOKEN }}        #GITEE的私人令牌
+          force_update: true
+          #debug: true
+
+# 备份到gitee  备份到gitee  备份到gitee
+
+# 暂时不用，仅做拉取别人仓库的示例
+      - name: sync form another github
+        uses: repo-sync/github-sync@v2
+        if: env.PAT
+        with:
+          source_repo: "https://github.com/name/repo.git"
+          source_branch: "master"
+          destination_branch: "master"
+          github_token: ${{ secrets.PAT }}   #此处PAT需要申请，教程详见：https://www.jianshu.com/p/bb82b3ad1d11
